@@ -126,6 +126,14 @@ export default {
 					}
 				} catch { }
 			}
+			// cookie校验失败，移除cookie
+			return new Response(await (await getLoginHtml(env)).text(), {
+				status: 200,
+				headers: {
+					'Set-Cookie': `${COOKIE_NAME}=; Path=/; HttpOnly; Max-Age=0`,
+					'Content-Type': 'text/html; charset=utf-8'
+				}
+			});
 		}
 
 		// 未登录，返回登录页

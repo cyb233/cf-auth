@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>登录</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f7f7f7;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: system-ui, sans-serif;
+    }
+    .login-box {
+      background: #fff;
+      padding: 2.5em 1.5em;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      width: 90vw;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+    }
+    .login-box input[type="password"] {
+      padding: 0.8em;
+      font-size: 1em;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .login-box button {
+      padding: 0.8em;
+      font-size: 1em;
+      border: none;
+      border-radius: 6px;
+      background: #0078ff;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .login-box button:active {
+      background: #005fcc;
+    }
+  </style>
+</head>
+<body>
+  <form class="login-box" id="loginForm">
+    <input type="password" name="password" placeholder="请输入密码" required autocomplete="current-password" />
+    <button type="submit">登录</button>
+  </form>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const password = form.password.value;
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ password })
+      });
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert('密码错误');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -87,15 +87,20 @@ export default {
 		const password = env[passwordKey];
 		const encKey = env.ENCRYPTION_KEY;
 
+		console.log(`[auth] 请求路径: ${url.pathname}, host: ${host}`);
+
 		// 若无密码，直接通过
 		if (!password) {
+			console.log('[auth] 未配置密码，直接通过');
 			return new Response('Hello World!');
 		}
 
 		// 登录请求
 		if (url.pathname === '/api/login' && request.method === 'POST') {
+			console.log('[auth] 收到登录请求');
 			const { password: inputPwd } = await request.json() as { password: string };
 			if (inputPwd === password) {
+				console.log('[auth] 登录成功');
 				const now = Date.now();
 				const key = await getKey(encKey);
 				const payload = JSON.stringify({ ts: now });
@@ -108,6 +113,7 @@ export default {
 					}
 				});
 			} else {
+				console.log('[auth] 登录失败，密码错误');
 				return new Response('Unauthorized', { status: 401 });
 			}
 		}
@@ -115,16 +121,24 @@ export default {
 		// 检查cookie
 		const token = getCookie(request, COOKIE_NAME);
 		if (token) {
+			console.log('[auth] 检测到cookie，开始校验');
 			const key = await getKey(encKey);
 			const decrypted = await decrypt(token, key);
 			if (decrypted) {
 				try {
 					const { ts } = JSON.parse(decrypted);
 					if (Date.now() - ts < COOKIE_MAX_AGE * 1000) {
+						console.log('[auth] cookie有效，代理请求');
 						// cookie有效，代理请求
 						return fetch(request);
+					} else {
+						console.log('[auth] cookie已过期');
 					}
-				} catch { }
+				} catch {
+					console.log('[auth] cookie解密或解析失败');
+				}
+			} else {
+				console.log('[auth] cookie解密失败');
 			}
 			// cookie校验失败，移除cookie
 			return new Response(await (await getLoginHtml(env)).text(), {

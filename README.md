@@ -29,14 +29,17 @@
 
 ## 配置
 
-- 在 `wrangler.jsonc` 的 `vars` 字段中配置各域名密码，例如：
+- 在 `wrangler.jsonc` 的 `vars` 字段中为每个域名配置密码和可选的白名单路径，例如：
   ```jsonc
   "vars": {
     "ENCRYPTION_KEY": "your-encryption-key",
-    "example.com": "your-password"
+    "PASSWORD_example.com": "your-password",
+    "WHITELIST_example.com": "^/public,^.*/static"
   }
   ```
-- `ENCRYPTION_KEY` 用于加密 Cookie，建议设置为 128 bit，加密方式为AES
+  - `PASSWORD_example.com`：指定 `example.com` 域名的登录密码
+  - `WHITELIST_example.com`：可选，逗号分隔的路径白名单（支持正则表达式），匹配则无需认证
+- `ENCRYPTION_KEY` 用于加密 Cookie，建议设置为 128 bit，加密方式为 AES
 
 ## 部署
 

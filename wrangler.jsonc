@@ -29,7 +29,8 @@
 	 */
 	"vars": {
 		"ENCRYPTION_KEY": "your-encryption-key",
-		"example.com": "your-password"
+		"PASSWORD_example.com": "your-password",
+		"WHITELIST_example.com": "^/public,^.*/static"
 	},
 	/**
 	 * Note: Use secrets to store sensitive data.

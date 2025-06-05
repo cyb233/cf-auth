@@ -26,8 +26,13 @@ function getHost(request: Request): string {
 	return host.split(':')[0].toLowerCase();
 }
 
-function getPasswordKey(host: string): string {
-	return `${host}`;
+function getEnvParams(env: Env, host: string): { password: string | undefined, whitelist: string } {
+	return {
+		//@ts-ignore
+		password: env[`PASSWORD_${host}`],
+		//@ts-ignore
+		whitelist: env[`WHITELIST_${host}`] || '',
+	};
 }
 
 async function encrypt(text: string, key: CryptoKey): Promise<string> {
@@ -82,9 +87,7 @@ export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		const host = getHost(request);
-		const passwordKey = getPasswordKey(host);
-		//@ts-ignore
-		const password = env[passwordKey];
+		const { password, whitelist } = getEnvParams(env, host);
 		const encKey = env.ENCRYPTION_KEY;
 
 		console.log(`[auth] 请求路径: ${url.pathname}, host: ${host}`);
@@ -93,6 +96,14 @@ export default {
 		if (!password) {
 			console.log('[auth] 未配置密码，直接通过');
 			return new Response('Hello World!');
+		}
+		// 检查path白名单，支持普通字符串和正则
+		if (whitelist && !whitelist.split(',').some(pattern => {
+			const regex = new RegExp(pattern);
+			return regex.test(url.pathname);
+		})) {
+			console.log('[auth] 请求路径不在白名单中');
+			return new Response('Forbidden', { status: 403 });
 		}
 
 		// 登录请求

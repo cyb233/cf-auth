@@ -29,6 +29,7 @@
 	 */
 	"vars": {
 		"ENCRYPTION_KEY": "your-encryption-key",
+		"COOKIE_MAX_AGE": 3600,
 		"example.com": {
 			"password": "your-password",
 			"whiteList": ["^/public", "^.*/static"]

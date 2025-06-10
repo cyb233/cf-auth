@@ -34,15 +34,17 @@
   {
   	"vars": {
   		"ENCRYPTION_KEY": "your-encryption-key",
+  		"COOKIE_MAX_AGE": 3600,
   		"example.com": {
   			"password": "your-password",
   			"whiteList": ["^/public", "^.*/static"]
   		}
-  	}
+  	},
   }
   ```
-  - `ENCRYPTION_KEY` 用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
-  - `example.com` 针对各个域名的配置
+  - `ENCRYPTION_KEY`：用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
+  - `COOKIE_MAX_AGE`：Cookie 的最大有效期（秒），用于控制登录会话的持续时间
+  - `example.com`：针对各个域名的配置
     - `password`：指定该域名的登录密码
     - `whiteList`：可选，路径白名单数组（支持正则表达式），若匹配则无需认证
 

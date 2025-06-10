@@ -12,7 +12,6 @@
  */
 
 const COOKIE_NAME = 'auth_token';
-const COOKIE_MAX_AGE = 60 * 60; // 1小时
 
 async function getLoginHtml(env: Env): Promise<Response> {
 	const html = await env.ASSETS.fetch('https://assets.local/login.html');
@@ -85,6 +84,7 @@ export default {
 		const host = getHost(request);
 		const { password, whiteList } = getEnvParams(env, host);
 		const encKey = env.ENCRYPTION_KEY;
+		const COOKIE_MAX_AGE = env.COOKIE_MAX_AGE;
 
 		console.log(`[auth] 请求路径: ${url.pathname}, host: ${host}`);
 

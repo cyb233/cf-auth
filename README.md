@@ -2,6 +2,21 @@
 
 本项目是基于 Cloudflare Workers 的简易认证中间件，支持密码登录和 Cookie 认证，适用于需要简单保护的服务。
 
+- 测试页面：
+
+  https://auth-test.shuvi.moe/
+
+- 测试配置：
+  ```
+  "auth-test.shuvi.moe": {
+    "password": "test",
+    "whiteList": ["^/public", "^.*/static"]
+  }
+  ```
+- 测试目录结构：
+
+  https://github.com/cyb233/auth-test/tree/main/public
+
 ## 功能
 
 - 密码登录，支持多域名配置不同密码
@@ -39,7 +54,7 @@
   			"password": "your-password",
   			"whiteList": ["^/public", "^.*/static"]
   		}
-  	},
+  	}
   }
   ```
   - `ENCRYPTION_KEY`：用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
@@ -51,6 +66,7 @@
 ## 部署
 
 - 配置路由
+
   参考：[Configuration - Wrangler · Cloudflare Workers docs](https://developers.cloudflare.com/workers/wrangler/configuration/#routes)
 
 - 部署

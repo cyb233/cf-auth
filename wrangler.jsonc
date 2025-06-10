@@ -10,6 +10,7 @@
 	"observability": {
 		"enabled": true
 	},
+	"workers_dev": false,
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -30,10 +31,14 @@
 	"vars": {
 		"ENCRYPTION_KEY": "your-encryption-key",
 		"COOKIE_MAX_AGE": 3600,
-		"example.com": {
+		"test.example.com": {
 			"password": "your-password",
 			"whiteList": ["^/public", "^.*/static"]
 		}
+	},
+	"route": {
+		"pattern": "test.example.com/*",
+		"zone_name": "example.com"
 	},
 	/**
 	 * Note: Use secrets to store sensitive data.

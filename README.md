@@ -44,13 +44,13 @@
   ```
   - `ENCRYPTION_KEY`：用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
   - `COOKIE_MAX_AGE`：Cookie 的最大有效期（秒），用于控制登录会话的持续时间
-  - `example.com`：针对各个域名的配置
+  - `test.example.com`：针对各个域名的配置
     - `password`：指定该域名的登录密码
     - `whiteList`：可选，路径白名单数组（支持正则表达式），若匹配则无需认证
 
 ## 部署
 
-- 配置域或路由
+- 配置路由
   参考：[Configuration - Wrangler · Cloudflare Workers docs](https://developers.cloudflare.com/workers/wrangler/configuration/#routes)
 
 - 部署

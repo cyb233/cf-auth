@@ -26,13 +26,9 @@ function getHost(request: Request): string {
 	return host.split(':')[0].toLowerCase();
 }
 
-function getEnvParams(env: Env, host: string): { password: string | undefined, whitelist: string } {
-	return {
-		//@ts-ignore
-		password: env[`PASSWORD_${host}`],
-		//@ts-ignore
-		whitelist: env[`WHITELIST_${host}`] || '',
-	};
+function getEnvParams(env: Env, host: string): { password: string | undefined, whiteList: Array<string> | undefined } {
+	// @ts-ignore
+	return env[host] || {};
 }
 
 async function encrypt(text: string, key: CryptoKey): Promise<string> {
@@ -87,7 +83,7 @@ export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		const host = getHost(request);
-		const { password, whitelist } = getEnvParams(env, host);
+		const { password, whiteList } = getEnvParams(env, host);
 		const encKey = env.ENCRYPTION_KEY;
 
 		console.log(`[auth] 请求路径: ${url.pathname}, host: ${host}`);
@@ -98,7 +94,7 @@ export default {
 			return new Response('Hello World!');
 		}
 		// 检查path白名单，支持普通字符串和正则
-		if (whitelist && !whitelist.split(',').some(pattern => {
+		if (whiteList && !whiteList.some(pattern => {
 			const regex = new RegExp(pattern);
 			return regex.test(url.pathname);
 		})) {

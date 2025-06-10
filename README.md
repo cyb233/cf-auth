@@ -31,21 +31,30 @@
 
 - 在 `wrangler.jsonc` 的 `vars` 字段中为每个域名配置密码和可选的白名单路径，例如：
   ```jsonc
-  "vars": {
-    "ENCRYPTION_KEY": "your-encryption-key",
-    "PASSWORD_example.com": "your-password",
-    "WHITELIST_example.com": "^/public,^.*/static"
+  {
+  	"vars": {
+  		"ENCRYPTION_KEY": "your-encryption-key",
+  		"example.com": {
+  			"password": "your-password",
+  			"whiteList": ["^/public", "^.*/static"]
+  		}
+  	}
   }
   ```
-  - `PASSWORD_example.com`：指定 `example.com` 域名的登录密码
-  - `WHITELIST_example.com`：可选，逗号分隔的路径白名单（支持正则表达式），匹配则无需认证
-- `ENCRYPTION_KEY` 用于加密 Cookie，建议设置为 128 bit，加密方式为 AES
+  - `ENCRYPTION_KEY` 用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
+  - `example.com` 针对各个域名的配置
+    - `password`：指定该域名的登录密码
+    - `whiteList`：可选，路径白名单数组（支持正则表达式），若匹配则无需认证
 
 ## 部署
 
-```bash
-npm run deploy
-```
+- 配置域或路由
+  参考：[Configuration - Wrangler · Cloudflare Workers docs](https://developers.cloudflare.com/workers/wrangler/configuration/#routes)
+
+- 部署
+  ```bash
+  npm run deploy
+  ```
 
 ## 参考
 

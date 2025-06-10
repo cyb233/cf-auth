@@ -94,7 +94,7 @@ export default {
 			return new Response('Hello World!');
 		}
 		// 检查path白名单，支持普通字符串和正则
-		if (whiteList && !whiteList.some(pattern => {
+		if (whiteList && whiteList.length > 0 && !whiteList.some(pattern => {
 			const regex = new RegExp(pattern);
 			return regex.test(url.pathname);
 		})) {

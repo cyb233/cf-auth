@@ -36,10 +36,12 @@
 			"whiteList": ["^/public", "^.*/static"]
 		}
 	},
-	"route": {
-		"pattern": "test.example.com/*",
-		"zone_name": "example.com"
-	},
+	"routes": [
+		{
+			"pattern": "test.example.com/*",
+			"zone_name": "example.com"
+		}
+	],
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/

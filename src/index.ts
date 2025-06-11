@@ -94,68 +94,68 @@ export default {
 			return new Response('Hello World!');
 		}
 		// 检查path白名单，支持普通字符串和正则
-		if (whiteList && whiteList.length > 0 && !whiteList.some(pattern => new RegExp(pattern).test(url.pathname))) {
-			console.log('[auth] 路径不在白名单内，进行身份验证');
+		if (whiteList && whiteList.length > 0 && whiteList.some(pattern => new RegExp(pattern).test(url.pathname))) {
+			console.log('[auth] 路径在白名单内，直接代理请求');
+			return fetch(request);
+		}
+		console.log('[auth] 路径不在白名单内，进行身份验证');
 
-			// 登录请求
-			if (url.pathname === '/api/login' && request.method === 'POST') {
-				console.log('[auth] 收到登录请求');
-				const { password: inputPwd } = await request.json() as { password: string };
-				if (inputPwd === password) {
-					console.log('[auth] 登录成功');
-					const now = Date.now();
-					const key = await getKey(encKey);
-					const payload = JSON.stringify({ ts: now });
-					const token = await encrypt(payload, key);
-					return new Response('ok', {
-						status: 200,
-						headers: {
-							'Set-Cookie': `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Max-Age=${COOKIE_MAX_AGE}`,
-							'Content-Type': 'text/plain'
-						}
-					});
-				} else {
-					console.log('[auth] 登录失败，密码错误');
-					return new Response('Unauthorized', { status: 401 });
-				}
-			}
-
-			// 检查cookie
-			const token = getCookie(request, COOKIE_NAME);
-			if (token) {
-				console.log('[auth] 检测到cookie，开始校验');
+		// 登录请求
+		if (url.pathname === '/api/login' && request.method === 'POST') {
+			console.log('[auth] 收到登录请求');
+			const { password: inputPwd } = await request.json() as { password: string };
+			if (inputPwd === password) {
+				console.log('[auth] 登录成功');
+				const now = Date.now();
 				const key = await getKey(encKey);
-				const decrypted = await decrypt(token, key);
-				if (decrypted) {
-					try {
-						const { ts } = JSON.parse(decrypted);
-						if (Date.now() - ts < COOKIE_MAX_AGE * 1000) {
-							console.log('[auth] cookie有效，代理请求');
-							// cookie有效，代理请求
-							return fetch(request);
-						} else {
-							console.log('[auth] cookie已过期');
-						}
-					} catch {
-						console.log('[auth] cookie解密或解析失败');
-					}
-				} else {
-					console.log('[auth] cookie解密失败');
-				}
-				// cookie校验失败，移除cookie
-				return new Response(await (await getLoginHtml(env)).text(), {
+				const payload = JSON.stringify({ ts: now });
+				const token = await encrypt(payload, key);
+				return new Response('ok', {
 					status: 200,
 					headers: {
-						'Set-Cookie': `${COOKIE_NAME}=; Path=/; HttpOnly; Max-Age=0`,
-						'Content-Type': 'text/html; charset=utf-8'
+						'Set-Cookie': `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; Max-Age=${COOKIE_MAX_AGE}`,
+						'Content-Type': 'text/plain'
 					}
 				});
+			} else {
+				console.log('[auth] 登录失败，密码错误');
+				return new Response('Unauthorized', { status: 401 });
 			}
-
-			// 未登录，返回登录页
-			return getLoginHtml(env);
 		}
-		console.log('[auth] 路径在白名单内，直接代理请求');
-		return fetch(request);
+
+		// 检查cookie
+		const token = getCookie(request, COOKIE_NAME);
+		if (token) {
+			console.log('[auth] 检测到cookie，开始校验');
+			const key = await getKey(encKey);
+			const decrypted = await decrypt(token, key);
+			if (decrypted) {
+				try {
+					const { ts } = JSON.parse(decrypted);
+					if (Date.now() - ts < COOKIE_MAX_AGE * 1000) {
+						console.log('[auth] cookie有效，代理请求');
+						// cookie有效，代理请求
+						return fetch(request);
+					} else {
+						console.log('[auth] cookie已过期');
+					}
+				} catch {
+					console.log('[auth] cookie解密或解析失败');
+				}
+			} else {
+				console.log('[auth] cookie解密失败');
+			}
+			// cookie校验失败，移除cookie
+			return new Response(await (await getLoginHtml(env)).text(), {
+				status: 200,
+				headers: {
+					'Set-Cookie': `${COOKIE_NAME}=; Path=/; HttpOnly; Max-Age=0`,
+					'Content-Type': 'text/html; charset=utf-8'
+				}
+			});
+		}
+
+		// 未登录，返回登录页
+		return getLoginHtml(env);
 	},
 } satisfies ExportedHandler<Env>;

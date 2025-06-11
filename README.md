@@ -7,11 +7,11 @@
   https://auth-test.shuvi.moe/
 
 - 测试配置：
-  ```
-  "auth-test.shuvi.moe": {
-    "password": "test",
-    "whiteList": ["^/public", "^.*/static"]
-  }
+  ```jsonc
+    "auth-test.shuvi.moe": {
+      "password": "test",
+      "whiteList": ["^/public", "^.*/static"]
+    }
   ```
 - 测试目录结构：
 
@@ -46,22 +46,20 @@
 
 - 在 `wrangler.jsonc` 的 `vars` 字段中为每个域名配置密码和可选的白名单路径，例如：
   ```jsonc
-  {
-  	"vars": {
-  		"ENCRYPTION_KEY": "your-encryption-key",
-  		"COOKIE_MAX_AGE": 3600,
-  		"example.com": {
-  			"password": "your-password",
-  			"whiteList": ["^/public", "^.*/static"]
-  		}
-  	}
-  }
+    "vars": {
+      "ENCRYPTION_KEY": "your-encryption-key",
+      "COOKIE_MAX_AGE": 3600,
+      "example.com": {
+        "password": "your-password",
+        "whiteList": ["^/public", "^.*/static"]
+      }
+    }
   ```
-  - `ENCRYPTION_KEY`：用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露_**
+  - `ENCRYPTION_KEY`：用于加解密 Cookie，建议设置为 128 bit，加密方式为 AES，**_注意不要泄露密钥_**
   - `COOKIE_MAX_AGE`：Cookie 的最大有效期（秒），用于控制登录会话的持续时间
   - `test.example.com`：针对各个域名的配置
     - `password`：指定该域名的登录密码
-    - `whiteList`：可选，路径白名单数组（支持正则表达式），若匹配则无需认证
+    - `whiteList`：可选，路径的白名单数组（[正则表达式语法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Regular_expressions)），若匹配则无需认证
 
 ## 部署
 

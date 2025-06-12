@@ -28,14 +28,18 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	"vars": {
-		"ENCRYPTION_KEY": "your-encryption-key",
-		"COOKIE_MAX_AGE": 3600,
-		"test.example.com": {
-			"password": "your-password",
-			"whiteList": ["^/public", "^.*/static"]
-		}
-	},
+  "vars": {
+    "ENCRYPTION_KEY": "your-encryption-key",
+    "COOKIE_MAX_AGE": 3600,
+    "REFRESH": false,
+    "example.com": {
+      "PASSWORD": "your-password",
+      "WHITE_LIST": ["^/public", "^.*/static"],
+      "ENCRYPTION_KEY": "your-another-key",
+      "COOKIE_MAX_AGE": 60,
+      "REFRESH": true
+    }
+  },
 	"routes": [
 		{
 			"pattern": "test.example.com/*",

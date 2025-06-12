@@ -1,17 +1,12 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+interface AuthConfig {
+	PASSWORD: string,
+	WHITE_LIST: Array<string>,
+	ENCRYPTION_KEY: string,
+	COOKIE_MAX_AGE: number,
+	REFRESH: boolean
+}
 
-const COOKIE_NAME = 'auth_token';
+const COOKIE_NAME = 'cf-auth_token';
 
 async function getLoginHtml(env: Env): Promise<Response> {
 	const html = await env.ASSETS.fetch('https://assets.local/login.html');
@@ -25,7 +20,15 @@ function getHost(request: Request): string {
 	return host.split(':')[0].toLowerCase();
 }
 
-function getEnvParams(env: Env, host: string): { password: string | undefined, whiteList: Array<string> | undefined } {
+function getEnvParams(env: Env, host: string): AuthConfig {
+	// @ts-ignore
+	env[host].WHITE_LIST = env[host].WHITE_LIST || [];
+	// @ts-ignore
+	env[host].ENCRYPTION_KEY = env[host].ENCRYPTION_KEY || env.ENCRYPTION_KEY;
+	// @ts-ignore
+	env[host].COOKIE_MAX_AGE = env[host].COOKIE_MAX_AGE || env.COOKIE_MAX_AGE || 3600;
+	// @ts-ignore
+	env[host].REFRESH = env[host].REFRESH || env.REFRESH || false;
 	// @ts-ignore
 	return env[host] || {};
 }
@@ -82,19 +85,17 @@ export default {
 	async fetch(request, env, ctx): Promise<Response> {
 		const url = new URL(request.url);
 		const host = getHost(request);
-		const { password, whiteList } = getEnvParams(env, host);
-		const encKey = env.ENCRYPTION_KEY;
-		const COOKIE_MAX_AGE = env.COOKIE_MAX_AGE;
+		const { PASSWORD, WHITE_LIST, ENCRYPTION_KEY, COOKIE_MAX_AGE, REFRESH } = getEnvParams(env, host);
 
 		console.log(`[auth] 请求路径: ${url.pathname}, host: ${host}`);
 
 		// 若无密码，直接通过
-		if (!password) {
+		if (!PASSWORD) {
 			console.log('[auth] 未配置密码，直接通过');
 			return new Response('Hello World!');
 		}
 		// 检查path白名单，支持普通字符串和正则
-		if (whiteList && whiteList.length > 0 && whiteList.some(pattern => new RegExp(pattern).test(url.pathname))) {
+		if (WHITE_LIST && WHITE_LIST.length > 0 && WHITE_LIST.some(pattern => new RegExp(pattern).test(url.pathname))) {
 			console.log('[auth] 路径在白名单内，直接代理请求');
 			return fetch(request);
 		}
@@ -104,10 +105,10 @@ export default {
 		if (url.pathname === '/api/login' && request.method === 'POST') {
 			console.log('[auth] 收到登录请求');
 			const { password: inputPwd } = await request.json() as { password: string };
-			if (inputPwd === password) {
+			if (inputPwd === PASSWORD) {
 				console.log('[auth] 登录成功');
 				const now = Date.now();
-				const key = await getKey(encKey);
+				const key = await getKey(ENCRYPTION_KEY);
 				const payload = JSON.stringify({ ts: now });
 				const token = await encrypt(payload, key);
 				return new Response('ok', {
@@ -127,7 +128,7 @@ export default {
 		const token = getCookie(request, COOKIE_NAME);
 		if (token) {
 			console.log('[auth] 检测到cookie，开始校验');
-			const key = await getKey(encKey);
+			const key = await getKey(ENCRYPTION_KEY);
 			const decrypted = await decrypt(token, key);
 			if (decrypted) {
 				try {
@@ -135,7 +136,17 @@ export default {
 					if (Date.now() - ts < COOKIE_MAX_AGE * 1000) {
 						console.log('[auth] cookie有效，代理请求');
 						// cookie有效，代理请求
-						return fetch(request);
+						const resp = await fetch(request);
+						// 续期cookie
+						const respHeaders = new Headers(resp.headers);
+						const newPayload = JSON.stringify({ ts: Date.now() });
+						const newToken = await encrypt(newPayload, key);
+						respHeaders.append('Set-Cookie', `${COOKIE_NAME}=${encodeURIComponent(newToken)}; Path=/; HttpOnly; Max-Age=${COOKIE_MAX_AGE}`);
+						return new Response(resp.body, {
+							status: resp.status,
+							statusText: resp.statusText,
+							headers: respHeaders
+						});
 					} else {
 						console.log('[auth] cookie已过期');
 					}
